@@ -1,0 +1,18 @@
+#!/usr/bin/env ruby
+
+require "rubygems"
+require "curb"
+require "nokogiri"
+
+request = Curl::Easy.new("http://www.pivotaltracker.com/services/v3/projects/#{ENV['PROJECT_ID']}/stories?filter=state%3Astarted%20owner%3A#{ENV['OWNER_ID']}")
+request.headers["X-TrackerToken"] = ENV['PT_TOKEN']
+request.perform
+
+xml = Nokogiri::XML(request.body_str)
+story_id = xml.xpath('//story/id').first.text
+story_type = xml.xpath('//story/story_type').first.text
+story_name = xml.xpath('//story/name').first.text
+
+commit_msg = "[#{story_id}] ##{story_type.upcase} #{story_name}"
+
+File.open(ARGV.first, 'w') { |file| file.puts(commit_msg) }
