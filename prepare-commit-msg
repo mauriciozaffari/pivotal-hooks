@@ -14,5 +14,9 @@ story_type = xml.xpath('//story/story_type').first.text
 story_name = xml.xpath('//story/name').first.text
 
 commit_msg = "[#{story_id}] ##{story_type.upcase} #{story_name}"
+path = ARGV.first
 
-File.open(ARGV.first, 'w') { |file| file.puts(commit_msg) }
+lines = IO.readlines(path)
+lines[0] = commit_msg
+
+File.open(path, 'w') { |file| file.puts lines }
