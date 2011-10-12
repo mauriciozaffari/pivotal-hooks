@@ -9,14 +9,18 @@ request.headers["X-TrackerToken"] = ENV['PT_TOKEN']
 request.perform
 
 xml = Nokogiri::XML(request.body_str)
-story_id = xml.xpath('//story/id').first.text
-story_type = xml.xpath('//story/story_type').first.text
-story_name = xml.xpath('//story/name').first.text
+story_id = xml.xpath('//story/id').first
 
-commit_msg = "[#{story_id}] ##{story_type.upcase} #{story_name}"
-path = ARGV.first
+unless story_id.nil?
+  story_id   = xml.xpath('//story/id').first.text
+  story_type = xml.xpath('//story/story_type').first.text
+  story_name = xml.xpath('//story/name').first.text
 
-lines = IO.readlines(path)
-lines[0] = commit_msg
+  commit_msg = "[#{story_id}] ##{story_type.upcase} #{story_name}"
+  path       = ARGV.first
 
-File.open(path, 'w') { |file| file.puts lines }
+  lines      = IO.readlines(path)
+  lines[0]   = commit_msg
+
+  File.open(path, 'w') { |file| file.puts lines }
+end
