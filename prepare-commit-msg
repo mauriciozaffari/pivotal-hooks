@@ -12,7 +12,7 @@ xml = Nokogiri::XML(request.body_str)
 story_id = xml.xpath('//story/id').first
 
 unless story_id.nil?
-  story_id   = xml.xpath('//story/id').first.text
+  story_id   = story_id.text
   story_type = xml.xpath('//story/story_type').first.text
   story_name = xml.xpath('//story/name').first.text
 
