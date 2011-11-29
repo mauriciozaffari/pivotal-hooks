@@ -1,24 +1,31 @@
-#!/usr/bin/env ruby
+#!/usr/bin/env ruby-1.9.2-p180-patched@pivotal
 
 require "rubygems"
 require "curb"
 require "nokogiri"
+
+def self.extract_msgs(ids, types, names)
+  (0...ids.size).map do |i|
+    "[#{ids[i].text}] ##{types[i].text.upcase} #{names[i].text}"
+  end
+end
 
 request = Curl::Easy.new("http://www.pivotaltracker.com/services/v3/projects/#{ENV['PROJECT_ID']}/stories?filter=state%3Astarted%20owner%3A#{ENV['OWNER_ID']}")
 request.headers["X-TrackerToken"] = ENV['PT_TOKEN']
 request.perform
 
 xml = Nokogiri::XML(request.body_str)
-story_id = xml.xpath('//story/id').first
 
-unless story_id.nil?
-  story_id   = story_id.text
-  story_type = xml.xpath('//story/story_type').first.text
-  story_name = xml.xpath('//story/name').first.text
+msgs = extract_msgs(
+         xml.xpath('//story/id'),
+         xml.xpath('//story/story_type'),
+         xml.xpath('//story/name')
+       )
 
-  commit_msg = "[#{story_id}] ##{story_type.upcase} #{story_name}"
+unless msgs.nil?
+  commit_msg = msgs.join("\n")
+
   path       = ARGV.first
-
   lines      = IO.readlines(path)
   lines[0]   = commit_msg
 
